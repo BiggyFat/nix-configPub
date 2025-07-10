@@ -1,4 +1,5 @@
-{ pkgs, ... }: {
+# home-manager/admin.nix
+{pkgs, ...}: {
   imports = [
     ./_common.nix
   ];
@@ -8,10 +9,9 @@
     homeDirectory = "/home/admin";
   };
 
-  # Paquets installés UNIQUEMENT pour l'utilisateur 'admin'
+  # Admin package only
   home.packages = with pkgs; [
-    # Exemples de paquets que seul l'admin pourrait vouloir :
-    htop      # Un moniteur de processus en terminal
-    gparted   # Un outil de gestion de partitions
+    htop # Process monitor in terminal
+    gparted
   ];
 }

@@ -1,4 +1,9 @@
-{serviceUser, pkgs,  ...}: {
+# home-manager/algo.nix
+{
+  serviceUser,
+  pkgs,
+  ...
+}: {
   imports = [
     ./_common.nix
   ];
@@ -7,9 +12,8 @@
     username = serviceUser;
     homeDirectory = "/home/${serviceUser}";
   };
-  
-  # Paquets installés UNIQUEMENT pour l'utilisateur 'serviceUser'
-  home.packages = with pkgs; [
 
+  # Algo package only
+  home.packages = with pkgs; [
   ];
 }

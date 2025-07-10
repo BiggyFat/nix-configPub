@@ -1,6 +1,5 @@
 # nixos/modules/python-envs.nix
-{ pkgs }: let
-  # on récupère explicitement open3d depuis pkgs
+{pkgs}: let
   open3dPkg = pkgs.python3Packages.open3d or pkgs.open3d;
 in {
   cameraServerEnv = pkgs.python3.withPackages (ps: [
@@ -10,7 +9,7 @@ in {
     ps.dill
     ps.pycurl
 
-    open3dPkg          # <- plus sûr que ps.open3d
+    open3dPkg
 
     ps.pyrealsense2
     ps.pillow
@@ -26,4 +25,3 @@ in {
     ps.pyscard
   ]);
 }
-
