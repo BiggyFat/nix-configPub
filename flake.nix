@@ -75,6 +75,7 @@
           ({pkgs, ...}: {nixpkgs.overlays = myOverlays;})
           ./nixos/configuration.nix
           ./nixos/modules/server-camera-package.nix
+          ./nixos/modules/github-deploy-key.nix
 
           ({lib, ...}: {
             services.displayManager.autoLogin = {
