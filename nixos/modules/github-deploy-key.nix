@@ -24,7 +24,7 @@ in {
   #####################################################################
   # 3) Git : réécrire automatiquement l’URL https→ssh
   programs.git.enable = true;
-  programs.git.extraConfig = {
+  programs.git.settings = {
     "url \"git@github.com:\"".insteadOf = "https://github.com/";
   };
 
