@@ -29,7 +29,7 @@
 
     forAllSystems = nixpkgs.lib.genAttrs systems;
 
-    serviceUser = "algo0010";
+    serviceUser = "algo0024";
   in
     {
       formatter =
@@ -55,12 +55,12 @@
         };
 
         homeConfigurations = {
-          "admin@test" = home-manager.lib.homeManagerConfiguration {
+          "admin@algoscope0024" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             modules = [./home-manager/admin.nix];
           };
 
-          "${serviceUser}@test" = home-manager.lib.homeManagerConfiguration {
+          "${serviceUser}@algoscope0024" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
             extraSpecialArgs = {inherit serviceUser;};
             modules = [./home-manager/algo.nix];
@@ -69,12 +69,19 @@
       }
     )
     // {
-      nixosConfigurations.test = nixpkgs.lib.nixosSystem {
+      nixosConfigurations.algoscope0024 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux"; # ← ici tu gardes ta machine cible
         modules = [
           ({pkgs, ...}: {nixpkgs.overlays = myOverlays;})
           ./nixos/configuration.nix
           ./nixos/modules/server-camera-package.nix
+
+          ({lib, ...}: {
+            services.displayManager.autoLogin = {
+              enable = true;
+              user = "${serviceUser}";
+            };
+          })
         ];
         specialArgs = {inherit inputs self serviceUser;};
       };

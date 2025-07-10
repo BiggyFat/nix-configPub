@@ -30,8 +30,8 @@ in {
   # virtualisation.vmware.guest.enable = true;
   # Time zone
   time.timeZone = "Europe/Paris";
-  # Hostname : test
-  networking.hostName = "test";
+  # Hostname
+  networking.hostName = "algoscope0024";
 
   nix = let
     flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
@@ -79,7 +79,7 @@ in {
       extraGroups = ["wheel" "video"];
     };
     ${serviceUser} = {
-      initialPassword = "${serviceUser}";
+      hashedPassword = "";
       isNormalUser = true;
       openssh.authorizedKeys.keys = [
       ];
