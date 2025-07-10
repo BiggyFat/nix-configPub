@@ -159,7 +159,7 @@ in {
     rustdesk-flutter # RustDesk for remote
     librealsense-gui
     librealsense
-    v4l-utils # For v4l2-ctl
+    guvcview
     ffmpeg # For ffplay
   ];
 
