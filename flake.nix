@@ -75,13 +75,6 @@
           ({pkgs, ...}: {nixpkgs.overlays = myOverlays;})
           ./nixos/configuration.nix
           ./nixos/modules/server-camera-package.nix
-
-          ({lib, ...}: {
-            services.displayManager.autoLogin = {
-              enable = true;
-              user = "${serviceUser}";
-            };
-          })
         ];
         specialArgs = {inherit inputs self serviceUser;};
       };
