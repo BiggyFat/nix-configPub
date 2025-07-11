@@ -33,11 +33,12 @@ self: prev: let
 
       # CUDA runtime
       "libcudart.so.12"
+      "libLLVM-10.so.1"
     ];
 
     buildInputs = with prev; [
       stdenv.cc.cc.lib
-      libusb.out
+      libusb1.out
       libGL
       xorg.libX11
       xorg.libXfixes
@@ -59,9 +60,6 @@ self: prev: let
     ];
 
     postInstall = ''
-      # Symlink LLVM (unchange)
-      ln -s ${prev.llvmPackages.llvm.lib}/lib/libLLVM-${prev.llvmPackages.llvm.version}.so \
-            $out/lib/libLLVM-10.so.1 || true
 
       # Remove Torch (CPU & CUDA) extension
       rm -f $out/lib/python*/site-packages/open3d/*/open3d_torch_ops.so || true
