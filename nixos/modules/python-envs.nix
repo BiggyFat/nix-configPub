@@ -1,7 +1,9 @@
 # nixos/modules/python-envs.nix
-{pkgs}: let
+{ pkgs }:
+let
   open3dPkg = pkgs.python3Packages.open3d or pkgs.open3d;
-in {
+in
+{
   cameraServerEnv = pkgs.python3.withPackages (ps: [
     ps.spyder-kernels
     ps.numpy

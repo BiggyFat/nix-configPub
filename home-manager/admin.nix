@@ -1,5 +1,6 @@
 # home-manager/admin.nix
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   imports = [
     ./_common.nix
   ];

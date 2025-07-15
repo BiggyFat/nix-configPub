@@ -3,67 +3,69 @@
   description = "Your new nix config";
 
   inputs = {
-    nixpkgs          .url = "github:NixOS/nixpkgs/nixos-25.05";
-    nixpkgs-unstable .url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    home-manager     .url = "github:nix-community/home-manager/release-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    home-manager.url = "github:nix-community/home-manager/release-25.05";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    alejandra        .url = "github:kamadorueda/alejandra";
   };
 
-  outputs = {
-    self,
-    nixpkgs,
-    nixpkgs-unstable,
-    home-manager,
-    alejandra,
-    ...
-  } @ inputs: let
-    systems = ["x86_64-linux" "aarch64-linux"];
-
-    myOverlays = [
-      (import ./overlays/open3d.nix)
-      (final: prev: {
-        brave-unstable = nixpkgs-unstable.legacyPackages.${prev.system}.brave;
-      })
-    ];
-
-    forAllSystems = nixpkgs.lib.genAttrs systems;
-
-    serviceUser = "algo0024";
-  in
+  outputs =
     {
-      formatter =
-        forAllSystems (system:
-          alejandra.packages.${system}.default);
+      self,
+      nixpkgs,
+      nixpkgs-unstable,
+      home-manager,
+      ...
+    }@inputs:
+    let
+      systems = [
+        "x86_64-linux"
+        "aarch64-linux"
+      ];
+
+      myOverlays = [
+        (import ./overlays/open3d.nix)
+        (final: prev: {
+          brave-unstable = nixpkgs-unstable.legacyPackages.${prev.system}.brave;
+        })
+      ];
+
+      forAllSystems = nixpkgs.lib.genAttrs systems;
+
+      serviceUser = "algo0024";
+    in
+    {
+      formatter = forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
     }
     // forAllSystems (
-      system: let
+      system:
+      let
         pkgs = import nixpkgs {
           inherit system;
           overlays = myOverlays;
         };
-      in {
+      in
+      {
         legacyPackages = pkgs;
 
         packages.default = pkgs.hello;
         devShells.default = pkgs.mkShell {
           name = "camera-env-test";
           packages = [
-            pkgs.alejandra
-            (import ./nixos/modules/python-envs.nix {inherit pkgs;}).cameraServerEnv
+            (import ./nixos/modules/python-envs.nix { inherit pkgs; }).cameraServerEnv
           ];
         };
 
         homeConfigurations = {
           "admin@algoscope0024" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
-            modules = [./home-manager/admin.nix];
+            modules = [ ./home-manager/admin.nix ];
           };
 
           "${serviceUser}@algoscope0024" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
-            extraSpecialArgs = {inherit serviceUser;};
-            modules = [./home-manager/algo.nix];
+            extraSpecialArgs = { inherit serviceUser; };
+            modules = [ ./home-manager/algo.nix ];
           };
         };
       }
@@ -72,11 +74,16 @@
       nixosConfigurations.algoscope0024 = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux"; # ← ici tu gardes ta machine cible
         modules = [
-          ({pkgs, ...}: {nixpkgs.overlays = myOverlays;})
+          (
+            { pkgs, ... }:
+            {
+              nixpkgs.overlays = myOverlays;
+            }
+          )
           ./nixos/configuration.nix
           ./nixos/modules/server-camera-package.nix
         ];
-        specialArgs = {inherit inputs self serviceUser;};
+        specialArgs = { inherit inputs self serviceUser; };
       };
     };
 }

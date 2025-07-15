@@ -3,7 +3,8 @@
   pkgs,
   self,
   ...
-}: let
+}:
+let
   serverCam = pkgs.stdenv.mkDerivation {
     pname = "server-camera";
     version = "1.0";
@@ -13,8 +14,9 @@
       cp server_camera.py no_picture.jpg $out/share/server_cam/
     '';
   };
-in {
+in
+{
   nixpkgs.overlays = [
-    (final: prev: {serverCam = serverCam;})
+    (final: prev: { serverCam = serverCam; })
   ];
 }

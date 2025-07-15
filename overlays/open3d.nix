@@ -1,5 +1,6 @@
 # overlays/open3d.nix
-self: prev: let
+self: prev:
+let
   pname = "open3d";
   version = "0.19.0";
   pyTag = "cp311";
@@ -18,7 +19,7 @@ self: prev: let
       sha256 = "sha256-Z4AXOS9sxkoZ2Dr+tTKf/oGWiT3iQy9MJY6qqBlCG7U=";
     };
 
-    nativeBuildInputs = [prev.autoPatchelfHook];
+    nativeBuildInputs = [ prev.autoPatchelfHook ];
     autoPatchelfIgnoreMissingDeps = [
       # CUDA/Torch
       "libtorch_cuda_cpp.so"
@@ -74,8 +75,11 @@ self: prev: let
       platforms = platforms.linux;
     };
   };
-in {
+in
+{
   open3d = open3dDrv;
 
-  python3Packages = prev.python3Packages // {open3d = open3dDrv;};
+  python3Packages = prev.python3Packages // {
+    open3d = open3dDrv;
+  };
 }

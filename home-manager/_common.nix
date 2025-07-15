@@ -1,5 +1,6 @@
 # home-manager/_common.nix
-{pkgs, ...}: {
+{ pkgs, ... }:
+{
   nixpkgs.config = {
     allowUnfree = true;
     allowUnfreePredicate = _: true;

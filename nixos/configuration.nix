@@ -6,9 +6,11 @@
   pkgs,
   serviceUser,
   ...
-}: let
-  pythonEnvironments = import ./modules/python-envs.nix {inherit pkgs;};
-in {
+}:
+let
+  pythonEnvironments = import ./modules/python-envs.nix { inherit pkgs; };
+in
+{
   imports = [
     ./hardware-configuration.nix
   ];
@@ -20,7 +22,10 @@ in {
     device = "nodev";
   };
 
-  boot.kernelModules = ["uvcvideo"];
+  #Port configuration 3000
+  networking.firewall.allowedTCPPorts = [ 3000 ];
+
+  boot.kernelModules = [ "uvcvideo" ];
 
   hardware.graphics.enable = true;
 
@@ -33,24 +38,26 @@ in {
   # Hostname
   networking.hostName = "algoscope0024";
 
-  nix = let
-    flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
-  in {
-    settings = {
-      # Enable flakes and new 'nix' command
-      experimental-features = "nix-command flakes";
-      # Opinionated: disable global registry
-      flake-registry = "";
-      # Workaround for https://github.com/NixOS/nix/issues/9574
-      nix-path = config.nix.nixPath;
-    };
-    # Opinionated: disable channels
-    channel.enable = false;
+  nix =
+    let
+      flakeInputs = lib.filterAttrs (_: lib.isType "flake") inputs;
+    in
+    {
+      settings = {
+        # Enable flakes and new 'nix' command
+        experimental-features = "nix-command flakes";
+        # Opinionated: disable global registry
+        flake-registry = "";
+        # Workaround for https://github.com/NixOS/nix/issues/9574
+        nix-path = config.nix.nixPath;
+      };
+      # Opinionated: disable channels
+      channel.enable = false;
 
-    # Opinionated: make flake registry and nix path match flake inputs
-    registry = lib.mapAttrs (_: flake: {inherit flake;}) flakeInputs;
-    nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
-  };
+      # Opinionated: make flake registry and nix path match flake inputs
+      registry = lib.mapAttrs (_: flake: { inherit flake; }) flakeInputs;
+      nixPath = lib.mapAttrsToList (n: _: "${n}=flake:${n}") flakeInputs;
+    };
 
   services.xserver = {
     enable = true;
@@ -64,7 +71,7 @@ in {
   i18n.defaultLocale = "fr_FR.UTF-8";
 
   services.udev.enable = true;
-  services.udev.packages = [pkgs.librealsense];
+  services.udev.packages = [ pkgs.librealsense ];
 
   hardware.enableRedistributableFirmware = true;
 
@@ -76,7 +83,10 @@ in {
       openssh.authorizedKeys.keys = [
       ];
       # Be sure to add any other groups you need (such as networkmanager, audio, docker, etc)
-      extraGroups = ["wheel" "video"];
+      extraGroups = [
+        "wheel"
+        "video"
+      ];
     };
     ${serviceUser} = {
       hashedPassword = "";
@@ -84,7 +94,7 @@ in {
       openssh.authorizedKeys.keys = [
       ];
       # Be sure to add any other groups you need (such as networkmanager, audio, docker, etc)
-      extraGroups = ["video"];
+      extraGroups = [ "video" ];
     };
   };
 
@@ -92,16 +102,16 @@ in {
   users.users.app-runner = {
     isSystemUser = true;
     group = "app-runners";
-    extraGroups = ["video"];
+    extraGroups = [ "video" ];
   };
-  users.groups.app-runners = {};
+  users.groups.app-runners = { };
 
   # Service definition
   systemd.services.server_camera = {
     description = "Python Camera Service";
-    wantedBy = ["multi-user.target"];
+    wantedBy = [ "multi-user.target" ];
 
-    path = with pkgs; [v4l-utils];
+    path = with pkgs; [ v4l-utils ];
 
     serviceConfig = {
       User = "app-runner";
@@ -126,10 +136,10 @@ in {
       ConditionPathExists = "/sys/class/net/wlo1";
     };
 
-    after = ["network.target"];
-    wantedBy = ["multi-user.target"];
+    after = [ "network.target" ];
+    wantedBy = [ "multi-user.target" ];
 
-    path = [pkgs.iw];
+    path = [ pkgs.iw ];
 
     serviceConfig = {
       Type = "oneshot";
@@ -161,6 +171,9 @@ in {
     librealsense
     guvcview
     ffmpeg # For ffplay
+    nftables # To replace existing {ip, ip6, arp, eb} tables framework
+    nixfmt-rfc-style # Nix official formatter
+    nixfmt-tree
   ];
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion

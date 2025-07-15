@@ -3,7 +3,8 @@
   serviceUser,
   pkgs,
   ...
-}: {
+}:
+{
   imports = [
     ./_common.nix
   ];
