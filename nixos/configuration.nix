@@ -22,6 +22,9 @@ in
     device = "nodev";
   };
 
+  # Allow unfree pkgs
+  nixpkgs.config.allowUnfree = true;
+
   #Port configuration 3000
   networking.firewall.allowedTCPPorts = [ 3000 ];
 
@@ -30,6 +33,12 @@ in
   hardware.graphics.enable = true;
 
   boot.loader.efi.canTouchEfiVariables = true;
+
+  # Activate global AppImage support
+  programs.appimage = {
+    enable = true; # monte les images squashFS, etc.
+    binfmt = true; # enregistre une règle binfmt → exécution transparente
+  };
 
   # VM Tools
   # virtualisation.vmware.guest.enable = true;
@@ -67,6 +76,14 @@ in
       layout = "fr";
       variant = "azerty";
     };
+    desktopManager.gnome.extraGSettingsOverrides = ''
+      [org.gnome.shell]
+      favorite-apps=['MonApp.desktop','org.gnome.Nautilus.desktop']
+    '';
+    desktopManager.gnome.extraGSettingsOverridePackages = [
+      pkgs.gsettings-desktop-schemas # nécessaire pour les schémas GNOME
+      pkgs.gnome-shell # pour les clés de org.gnome.shell
+    ];
   };
   i18n.defaultLocale = "fr_FR.UTF-8";
 
@@ -174,6 +191,8 @@ in
     nftables # To replace existing {ip, ip6, arp, eb} tables framework
     nixfmt-rfc-style # Nix official formatter
     nixfmt-tree
+    gnomeExtensions.desktop-icons-ng-ding
+    appimage-run # To make AppImage file executable
   ];
 
   # https://nixos.wiki/wiki/FAQ/When_do_I_update_stateVersion
