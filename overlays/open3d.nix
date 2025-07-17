@@ -1,4 +1,6 @@
-# overlays/open3d.nix
+# /overlays/open3d.nix
+# This file defines how to build the 'open3d' Python package,
+# which is not available in the standard nixpkgs in this version.
 self: prev:
 let
   pname = "open3d";
@@ -21,18 +23,13 @@ let
 
     nativeBuildInputs = [ prev.autoPatchelfHook ];
     autoPatchelfIgnoreMissingDeps = [
-      # CUDA/Torch
       "libtorch_cuda_cpp.so"
       "libtorch_cuda_cu.so"
       "libtorch_cuda.so"
       "libc10_cuda.so"
-
-      # Torch-CPU
       "libtorch_cpu.so"
       "libtorch.so"
       "libc10.so"
-
-      # CUDA runtime
       "libcudart.so.12"
       "libLLVM-10.so.1"
     ];
@@ -61,8 +58,6 @@ let
     ];
 
     postInstall = ''
-
-      # Remove Torch (CPU & CUDA) extension
       rm -f $out/lib/python*/site-packages/open3d/*/open3d_torch_ops.so || true
       rm -f $out/lib/python*/site-packages/open3d/**/lib{GL,EGL}.so.1   || true
       rm -f $out/lib/python*/site-packages/open3d/**/*swrast_dri.so     || true

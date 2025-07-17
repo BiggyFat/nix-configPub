@@ -22,7 +22,15 @@ import numpy as np
 from PIL import Image
 import time
 
-no_image = Image.open('no_picture.jpg')
+# Trouve le chemin absolu du dossier où se trouve le script.
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construit le chemin complet vers l'image.
+image_path = os.path.join(script_dir, 'no_picture.jpg')
+
+# Ouvre l'image en utilisant son chemin absolu.
+no_image = Image.open(image_path)
+
 img_byte_arr = io.BytesIO()
 no_image.save(img_byte_arr, format='JPEG')
 img_bytes_no_image = img_byte_arr.getvalue()
