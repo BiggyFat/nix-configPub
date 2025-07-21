@@ -1,39 +1,37 @@
-# /flake.nix
+# flake.nix
 #
-# This is the main entry point for the NixOS configuration.
-# It defines the dependencies (inputs) and what to build (outputs).
-# The logic is kept minimal here, mostly pointing to other files
-# in the repository to promote modularity and readability.
+# Entrée principale pour gérer la configuration NixOS et Home Manager.
+# Ce fichier définit les dépendances (inputs) et les configurations (outputs).
+# Il inclut également une intégration Hyprland avec un fond d'écran personnalisé.
+
 {
-  description = "A modular and scalable NixOS configuration by BaronVonMuller";
+  description = "A modular and scalable NixOS configuration by BiggyFat";
 
   # -----------------------------------------------------------------------------
   # --- INPUTS ------------------------------------------------------------------
   # -----------------------------------------------------------------------------
   #
-  # All external dependencies (e.g., nixpkgs, home-manager) are defined here.
-  # This makes it easy to update them from a central location.
+  # Dépendances externes (inputs) utilisées pour construire la configuration.
   inputs = {
-    # The official NixOS package repository. We follow the unstable channel.
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    # Le dépôt officiel de NixOS. Utilise la branche unstable.
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
-    # Home Manager, for managing user-specific configurations declaratively.
+    # Home Manager : gestion des configurations utilisateur.
     home-manager = {
       url = "github:nix-community/home-manager";
-      # Ensure home-manager uses the same nixpkgs revision as the system.
+      # Synchronise nixpkgs entre Home Manager et le système.
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # (Optional but good practice) Hardware-specific configurations from the community.
-    nixos-hardware.url = "github:nixos/nixos-hardware";
+    # NixOS Hardware : configurations matérielles spécifiques.
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
   };
 
   # -----------------------------------------------------------------------------
   # --- OUTPUTS -----------------------------------------------------------------
   # -----------------------------------------------------------------------------
   #
-  # This function defines what the flake builds.
-  # We define our NixOS systems (hosts) and home-manager configurations here.
+  # Sorties (outputs) définissant les configurations NixOS et Home Manager.
   outputs =
     {
       self,
@@ -42,81 +40,64 @@
       ...
     }@inputs:
     let
-      # --- Global Variables ---
-      # Define variables that are shared across all hosts and modules.
-
-      # The system architecture.
-      system = "x86_64-linux";
-
-      # The username for the main interactive user (with sudo).
-      adminUser = "admin";
-
-      # The username for the service user
-      serviceUser = "algo";
-
-      pkgs = nixpkgs.legacyPackages.${system};
-
+      # --- Variables Globales ---
+      # Définies une seule fois ici pour être utilisées dans les modules.
+      system = "x86_64-linux"; # Architecture de la machine.
+      adminUser = "admin";     # Utilisateur principal.
+      serviceUser = "algo";    # Utilisateur pour les services.
+      pkgs = nixpkgs.legacyPackages.${system}; # Packages Nix disponibles.
     in
     {
-      # --- NixOS Configurations ---
+      # --- Configurations NixOS ---
       #
-      # This is where we define each of our machines (hosts).
-      # Each host is an entry in this set.
+      # Définition des configurations pour chaque machine (hôte).
       nixosConfigurations = {
-        # Define your primary machine.
-        # The configuration is built by nixosSystem, a function from nixpkgs.
+        # Configuration principale pour la machine "algoscope".
         "algoscope" = nixpkgs.lib.nixosSystem {
           inherit system;
 
-          # specialArgs are passed to all modules. This is how we pass down
-          # our inputs and global variables like 'serviceUser'.
+          # Variables partagées avec les modules (inputs et utilisateurs).
           specialArgs = { inherit inputs adminUser serviceUser; };
 
-          # The list of modules that make up this host's configuration.
-          # This is where we assemble the final system from our modular components.
+          # Modules utilisés pour assembler la configuration finale.
           modules = [
-            # 1. The host-specific configuration (hostname, hardware, etc.)
-            #    Nix will automatically look for a `default.nix` in this directory.
+            # 1. Configuration spécifique à l'hôte.
             ./hosts/algoscope
 
-            # 2. The Home Manager module itself. This is required to enable it.
+            # 2. Activation du module Home Manager.
             home-manager.nixosModules.home-manager
 
-            # 3. The configuration for Home Manager.
+            # 3. Configuration utilisateur avec Home Manager.
             {
               home-manager = {
-                useGlobalPkgs = true; # Use system-level nixpkgs.
-                useUserPackages = true; # Allow home-manager to install packages.
+                useGlobalPkgs = true;   # Utilise nixpkgs au niveau système.
+                useUserPackages = true; # Permet à Home Manager d'installer des paquets.
 
-                # Pass flake inputs and specialArgs down to home-manager modules.
+                # Variables partagées avec les modules Home Manager.
                 extraSpecialArgs = { inherit inputs adminUser serviceUser; };
 
-                # Define which user will be managed by Home Manager.
-                # We use the 'serviceUser' variable to make it dynamic.
-                # The actual user configuration is imported from our modules directory.
+                # Gestion des utilisateurs via Home Manager.
                 users.${adminUser} = import ./modules/home-manager/admin.nix;
                 users.${serviceUser} = import ./modules/home-manager/algo.nix;
               };
             }
+
+            # 4. Module pour Hyprland et le fond d'écran.
+            ./modules/wallpaper.nix
           ];
         };
-
-        # You can easily add another host here in the future:
-        # "laptop" = nixpkgs.lib.nixosSystem { ... };
       };
 
       # --- Environnement de Développement ---
       #
-      # Ce shell fournit les outils nécessaires pour travailler SUR cette configuration.
-      # Il n'est pas inclus dans le système final construit.
+      # Fournit un shell de développement avec les outils nécessaires.
       devShells.${system}.default = pkgs.mkShell {
-        # Les paquets disponibles lorsque vous lancez 'nix develop'.
+        # Paquets disponibles dans le shell de développement.
         packages = with pkgs; [
-          nixfmt-tree # Le formateur de code Nix officiel.
-          nix-tree # Outil pour visualiser les dépendances d'une dérivation.
-          vim # Ou l'éditeur de votre choix.
+          nixfmt       # Formatteur pour les fichiers Nix.
+          nix-tree     # Visualisation des dépendances des dérivations Nix.
+          vim          # Éditeur de texte ou tout autre outil que tu préfères.
         ];
       };
-
     };
 }
